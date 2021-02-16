@@ -80,7 +80,7 @@ public class MemberTest {
 		memberVO.setHOUSE_ADRES("집주소");
 		memberVO.setGROUP_ID("GROUP_00000000000000");//외래키이기 때문에 부모테이블에 있는 값을 넣어야함.
 		memberVO.setEMPLYR_STTUS_CODE("P");//회원상태코드 P-활성, S-비활성
-		memberVO.setESNTL_ID("USRCNFRM_00000000000");//고유ID이기 때문
+		memberVO.setESNTL_ID("USRCNFRM_" + memberList.size());//고유ID이기 때문
 		memberService.insertMember(memberVO);
 	}
 	
