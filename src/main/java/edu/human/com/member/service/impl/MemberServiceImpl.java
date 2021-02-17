@@ -1,6 +1,7 @@
 package edu.human.com.member.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -23,7 +24,7 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	public EmployerInfoVO viewMember(String emplyr_id) throws Exception {
-		// DAO클래스에서 메서드호출
+		// DAO클래스에서 매서드호출
 		return memberDAO.viewMember(emplyr_id);
 	}
 
@@ -43,6 +44,18 @@ public class MemberServiceImpl implements MemberService {
 	public void updateMember(EmployerInfoVO employerInfoVO) throws Exception {
 		// DAO클래스에서 메서드호출
 		memberDAO.updateMember(employerInfoVO);
+	}
+
+	@Override
+	public Map<Object, Object> selectCodeMap(String code_id) throws Exception {
+		// DAO클래스에서 메서드호출
+		return memberDAO.selectCodeMap(code_id);
+	}
+
+	@Override
+	public Map<Object, Object> selectGroupMap() throws Exception {
+		// DAO클래스에서 메서드호출
+		return memberDAO.selectGroupMap();
 	}
 
 }

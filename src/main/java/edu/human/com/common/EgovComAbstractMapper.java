@@ -1,6 +1,7 @@
 package edu.human.com.common;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -46,6 +47,7 @@ public abstract class EgovComAbstractMapper extends EgovAbstractMapper {
 	public int insert(String queryId) {
 		return getSqlSession().insert(queryId);
 	}
+
 	@Override
 	public int insert(String queryId, Object parameterObject) {
 		return getSqlSession().insert(queryId, parameterObject);
@@ -73,11 +75,11 @@ public abstract class EgovComAbstractMapper extends EgovAbstractMapper {
 	public int update(String queryId) {
 		return getSqlSession().update(queryId);
 	}
+
 	@Override
 	public int update(String queryId, Object parameterObject) {
 		return getSqlSession().update(queryId, parameterObject);
 	}
-	
 	
 	@Override
 	public <E> List<E> selectList(String queryId, Object parameterObject, RowBounds rowBounds) {
@@ -85,17 +87,29 @@ public abstract class EgovComAbstractMapper extends EgovAbstractMapper {
 	}
 
 	/**
-	 * 페이징범위계산 : pageIndex(선택한페이지)와 pageSize(=limit,1페이지당 보여줄 갯수) 2개 값을 매개변수로 받아서 
-	 * 계산결과1 : skipResults = pageIndex * pageSize = 1*10, 2*10, 3*10 선택한 페이지까지 검색된 개수
-	 * 계산결과1 : 화면에 출력할 내용중 시작할 번호 = offset
-	 * 계산결과2 : maxResults = RowBounds(선택된 페이지 * 1페이지당 보여줄개수) + 1페이지당 보여줄개수
-	 * 계산결과2 : maxResults = 화면에 출력할 내용중 끝번호
+	 * 페이징범위계산: pageIndex(선택한페이지) 와 pageSize(=limit,1페이지당보여줄계수) 2개 값을 매개변수로 받아서
+	 * 쿼리에서 시작 인덱스번호를 구하기: offset = (pageIndex-1)*pageSize;
+	 * 1페이지일떄시작*offset: (1-1)x10 = 0 [테이블에서는 1번째 레코드]
+ 	 * 2페이지일때시작*offset: (2-1)x10 = 10[테이블에서는 11번째 레코드]
 	 */
 	@Override
 	public List<?> listWithPaging(String queryId, Object parameterObject, int pageIndex, int pageSize) {
 		int offset = (pageIndex-1) * pageSize;
-		RowBounds rowBounds = new RowBounds(offset, pageSize);//(시작인덱스번호, 꺼내올개수)
+		RowBounds rowBounds = new RowBounds(offset, pageSize);//(시작인덱스번호,꺼내올 개수)
 		return getSqlSession().selectList(queryId, parameterObject, rowBounds);
 	}
+
+	@Override
+	public <K, V> Map<K, V> selectMap(String queryId, Object parameterObject, String mapKey) {
+		// 공통코드를 위한 맵타입의 반환하는 sqlSession템플릿 사용(아래)
+		return getSqlSession().selectMap(queryId, parameterObject, mapKey);
+	}
+
+	@Override
+	public <K, V> Map<K, V> selectMap(String queryId, String mapKey) {
+		// 그룹코드는 키로 이름은 밸류로 맵자료형으로 반환하는 sqlSession템플릿 사용(아래)
+		return getSqlSession().selectMap(queryId, mapKey);
+	}
+	
 	
 }

@@ -1,6 +1,7 @@
 package edu.human.com.member.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
@@ -17,12 +18,11 @@ import edu.human.com.member.service.EmployerInfoVO;
 public class MemberDAO extends EgovComAbstractMapper {
 	
 	public List<EmployerInfoVO> selectMember() throws Exception {
-		
 		return selectList("memberMapper.selectMember");
 	}
 	
 	public EmployerInfoVO viewMember(String emplyr_id) throws Exception {
-		//selectOne("쿼리ID","쿼리 매개변수=파라미터=인자값");
+		//selctOne("쿼리ID","쿼리매개변수=파라미터=인자");
 		return selectOne("memberMapper.viewMember", emplyr_id);
 	}
 	
@@ -37,5 +37,15 @@ public class MemberDAO extends EgovComAbstractMapper {
 	
 	public void updateMember(EmployerInfoVO employerInfoVO) throws Exception {
 		update("memberMapper.updateMember", employerInfoVO);
+	}
+	
+	public Map<Object, Object> selectCodeMap(String code_id) throws Exception {
+		//System.out.println("디버그2 : " + code_id);
+		return selectMap("memberMapper.selectCodeMap", code_id, "CODE");
+	}
+	
+	public Map<Object, Object> selectGroupMap() throws Exception {
+		//memberMapper 쿼리 호출(아래)
+		return selectMap("memberMapper.selectGroupMap", "GROUP_ID");
 	}
 }
