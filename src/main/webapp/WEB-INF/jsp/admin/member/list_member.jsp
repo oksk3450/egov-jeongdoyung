@@ -34,12 +34,12 @@
 
                 <div class="card-tools">
                   
-                  <form name="search_form" action="member_list.html" method="get">
+                  <form name="search_form" action="<c:url value='/' />admin/member/list_member.do" method="get">
                   <div class="input-group input-group-sm">
                     <!-- 부트스트랩 템플릿만으로는 디자인처리가 부족한 경우가 있기 때문에 종종 인라인 스타일 사용 -->
                     <div>
-                        <select class="form-control">
-                            <option value="" selected>-전체-</option>
+                        <select name="search_type" class="form-control">
+                            <option value="all" selected>-전체-</option>
                             <option value="user_id" data-select2-id="8">ID</option>
                             <option value="user_name" data-select2-id="16">이름</option>
                         </select>
@@ -95,7 +95,7 @@
             
             <!-- 버튼영역 시작 -->
               <div class="card-body">
-              	<a href="member_write.html" class="btn btn-primary float-right">CREATE</a>
+              	<a href="<c:url value='/admin/member/insert_member.do' />" class="btn btn-primary float-right">등록</a>
               	<!-- 부트스트랩 디자인 버튼클래스를 이용해서 a태그를 버튼모양 만들기(위) -->
               	<!-- btn클래스명이 버튼모양으로 변경, btn-primary클래스명은 버튼색상을 변경하는역할 -->
               	<!-- 
