@@ -8,9 +8,9 @@ order by group_dc asc
 </select>
 
 <select id="selectCodeMap" resultType="java.util.HashMap">
-select CODE, CODE_NM
-from lettccmmndetailcode
-where code_id = #{mapKey}
+select CODE, CODE_NM 
+from lettccmmndetailcode 
+where code_id = #{code_id}
 </select>
 
 <select id="selectMember" resultType="edu.human.com.member.service.EmployerInfoVO">
@@ -32,9 +32,9 @@ where
 	<if test="search_type == 'user_name'.toString()">
 		USER_NM LIKE CONCAT('%',#{search_keyword},'%')
 	</if>
-</if>
+</if> 
 order by sbscrb_de desc
-LIMIT #{queryStartNO},#{queryPerPageNum}
+LIMIT #{queryStartNo},#{queryPerPageNum}
 </select>
 
 <select id="viewMember" resultType="edu.human.com.member.service.EmployerInfoVO">

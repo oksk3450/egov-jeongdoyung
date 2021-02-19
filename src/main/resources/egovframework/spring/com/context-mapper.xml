@@ -2,7 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
 	<bean id="egov.lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="true" />
-	<!-- mapper Locations는 마이바티스 xml파일 위치를 명시함.(아래) -->
+	<!-- mapperLocations는 마이바티스쿼리xml파일 위치를 명시한다.(아래) -->
 	<bean id="egov.sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">		
 		<property name="dataSource" ref="egov.dataSource"/>
 		<property name="configLocation" value="classpath:/egovframework/mapper/config/mapper-config.xml" />
