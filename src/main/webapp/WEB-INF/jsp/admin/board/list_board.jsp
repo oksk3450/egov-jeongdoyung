@@ -77,6 +77,9 @@
                     </tr>
                   </thead>
                   <tbody>
+                  <c:if test="${fn:length(resultList) == 0}">
+                  	<tr><td class="text-center" colspan="5">조회된 값이 없습니다.</td></tr>
+                  </c:if>
                   <c:forEach items="${resultList}" var="result" varStatus="status">
                     <tr>
                       <td>

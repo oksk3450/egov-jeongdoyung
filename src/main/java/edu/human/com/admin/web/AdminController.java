@@ -51,7 +51,7 @@ public class AdminController {
 	private CommonUtil commUtil;
 	@Inject
 	private BoardService boardService;
-	//스프링빈(new키워드를 만드는 오브젝트X) 오브젝트를 사용하는방법 @inject(자바8이상), @Autowired(많이사용),
+	//스프링빈(new키워드만드는 오브젝트X) 오브젝트를 사용하는 방법 @Inject(자바8이상), @Autowired(많이사용), @Resource(자바7이하)
 	@Autowired
 	private EgovBBSAttributeManageService bbsAttrbService;
 	@Autowired
@@ -66,6 +66,104 @@ public class AdminController {
 	private DefaultBeanValidator beanValidator;
 	@Autowired
 	private EgovFileMngUtil fileUtil;
+	
+	//게시물 등록 폼화면 호출 POST
+	@RequestMapping("/admin/board/insert_board_form.do")
+	public String insert_board_form(@ModelAttribute("searchVO") BoardVO boardVO, ModelMap model) throws Exception {
+		// 사용자권한 처리
+		if(!EgovUserDetailsHelper.isAuthenticated()) {
+			model.addAttribute("message", egovMessageSource.getMessage("fail.common.login"));
+	    	return "cmm/uat/uia/EgovLoginUsr";
+		}
+
+	    LoginVO user = (LoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+
+		BoardMasterVO bdMstr = new BoardMasterVO();
+
+		if (isAuthenticated) {
+
+		    BoardMasterVO vo = new BoardMasterVO();
+		    vo.setBbsId(boardVO.getBbsId());
+		    vo.setUniqId(user.getUniqId());
+
+		    bdMstr = bbsAttrbService.selectBBSMasterInf(vo);
+		    model.addAttribute("bdMstr", bdMstr);
+		}
+
+		//----------------------------
+		// 기본 BBS template 지정
+		//----------------------------
+		if (bdMstr.getTmplatCours() == null || bdMstr.getTmplatCours().equals("")) {
+		    bdMstr.setTmplatCours("/css/egovframework/cop/bbs/egovBaseTemplate.css");
+		}
+
+		model.addAttribute("brdMstrVO", bdMstr);
+		////-----------------------------
+
+		return "admin/board/insert_board";
+	}
+	//게시물 등록 DAO처리 호출 POST
+	@RequestMapping("/admin/board/insert_board.do")
+	public String insert_board(final MultipartHttpServletRequest multiRequest, @ModelAttribute("searchVO") BoardVO boardVO,
+		    @ModelAttribute("bdMstr") BoardMaster bdMstr, @ModelAttribute("board") Board board, BindingResult bindingResult, SessionStatus status,
+		    ModelMap model) throws Exception {
+		// 사용자권한 처리
+		if(!EgovUserDetailsHelper.isAuthenticated()) {
+			model.addAttribute("message", egovMessageSource.getMessage("fail.common.login"));
+	    	return "cmm/uat/uia/EgovLoginUsr";
+		}
+
+		LoginVO user = (LoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+
+		beanValidator.validate(board, bindingResult);
+		if (bindingResult.hasErrors()) {
+
+		    BoardMasterVO master = new BoardMasterVO();
+		    BoardMasterVO vo = new BoardMasterVO();
+
+		    vo.setBbsId(boardVO.getBbsId());
+		    vo.setUniqId(user.getUniqId());
+
+		    master = bbsAttrbService.selectBBSMasterInf(vo);
+
+		    model.addAttribute("bdMstr", master);
+
+		    //----------------------------
+		    // 기본 BBS template 지정
+		    //----------------------------
+		    if (master.getTmplatCours() == null || master.getTmplatCours().equals("")) {
+			master.setTmplatCours("/css/egovframework/cop/bbs/egovBaseTemplate.css");
+		    }
+
+		    model.addAttribute("brdMstrVO", master);
+		    ////-----------------------------
+
+		    return "admin/board/insert_board";
+		}
+
+		if (isAuthenticated) {
+		    List<FileVO> result = null;
+		    String atchFileId = "";
+
+		    final Map<String, MultipartFile> files = multiRequest.getFileMap();
+		    if (!files.isEmpty()) {
+			result = fileUtil.parseFileInf(files, "BBS_", 0, "", "");
+			atchFileId = fileMngService.insertFileInfs(result);
+		    }
+		    board.setAtchFileId(atchFileId);
+		    board.setFrstRegisterId(user.getUniqId());
+		    board.setBbsId(board.getBbsId());
+
+		    board.setNtcrNm("");	// dummy 오류 수정 (익명이 아닌 경우 validator 처리를 위해 dummy로 지정됨)
+		    board.setPassword("");	// dummy 오류 수정 (익명이 아닌 경우 validator 처리를 위해 dummy로 지정됨)
+		    //board.setNttCn(unscript(board.getNttCn()));	// XSS 방지
+
+		    bbsMngService.insertBoardArticle(board);
+		}
+		return "redirect:/admin/board/list_board.do?bbsId="+board.getBbsId();
+	}
 	
 	//게시물 수정 처리 호출 POST
 	@RequestMapping("/admin/board/update_board.do")
@@ -110,10 +208,12 @@ public class AdminController {
 		    if (!files.isEmpty()) {//첨부파일이 있을때 작동
 		    	//기존 첨부파일이 존재하지 않으면 신규등록
 				if ("".equals(atchFileId)) {
+					System.out.println("디버그1:-기존첨부파일이 없을경우 신규등록시 사용"+atchFileId);
 				    List<FileVO> result = fileUtil.parseFileInf(files, "BBS_", 0, atchFileId, "");
 				    atchFileId = fileMngService.insertFileInfs(result);
 				    board.setAtchFileId(atchFileId);
-				} else {//기본첨부파일이 존재하면 기존 삭제하고, 신규등록
+				} else {//기본첨부파일이 존재하면 기존것 보존하고, 다시 신규등록
+					System.out.println("디버그2:"+atchFileId);
 				    FileVO fvo = new FileVO();
 				    fvo.setAtchFileId(atchFileId);
 				    int cnt = fileMngService.getMaxFileSN(fvo);
@@ -129,8 +229,15 @@ public class AdminController {
 		    //게시물 업데이트 레코드 처리(아래)
 		    bbsMngService.updateBoardArticle(board);
 		}
+		
+	    BoardVO bdvo = new BoardVO();
+	    bdvo = bbsMngService.selectBoardArticle(boardVO);
 
-		return "redirect:/admin/board/list_board.do?bbsId="+board.getBbsId();
+	    return "redirect:/admin/board/view_board.do?bbsId="+bdvo.getBbsId()
+		+"&nttId="+bdvo.getNttId()+"&bbsTyCode="+bdvo.getBbsTyCode()
+		+"&bbsAttrbCode="+bdvo.getBbsAttrbCode()+"&authFlag=Y"
+		+"&pageIndex="+bdvo.getPageIndex();	
+		//return "redirect:/admin/board/list_board.do?bbsId="+board.getBbsId();
 	}
 	//게시물 수정 화면을 호출 POST
 	@RequestMapping("/admin/board/update_board_form.do")
@@ -182,11 +289,12 @@ public class AdminController {
 		if(boardVO.getAtchFileId()!=null && !"".equals(boardVO.getAtchFileId()) ) {
 			System.out.println("디버그:첨부파일ID "+boardVO.getAtchFileId());
 			//fileVO.setAtchFileId(boardVO.getAtchFileId());
-			//fileMngService.deleteAllFileInf(fileVO);
+			//fileMngService.deleteAllFileInf(fileVO);//USE_AT='N'삭제X
 			//물리파일지우려면 2가지값 필수: file_stre_cours, stre_file_nm
-			//실제 폴더에서 파일도 삭제(아래)
-			if(fileVO.getAtchFileId() !=null && fileVO.getAtchFileId() != "") {
-				FileVO delfileVO = fileMngService.selectFileInf(fileVO);
+			//실제 폴더에서 파일도 삭제(아래 1개만 삭제하는 로직 -> 여러개 삭제하는 로직 변경)
+			List<FileVO> fileList = fileMngService.selectFileInfs(fileVO);
+			for(FileVO oneFileVO:fileList) {
+				FileVO delfileVO = fileMngService.selectFileInf(oneFileVO);
 				File target = new File(delfileVO.getFileStreCours(), delfileVO.getStreFileNm());
 				if(target.exists()) {
 					target.delete();//폴더에서 기존첨부파일 지우기
@@ -194,11 +302,10 @@ public class AdminController {
 				}
 			}
 			//첨부파일 레코드삭제(아래)
-			boardService.delete_attach(boardVO.getAtchFileId());//게시물에 딸린 첨부파일 테이블 2개 레코드 삭제
+			boardService.delete_attach(boardVO.getAtchFileId());//게시물에 딸린 첨부파일테이블 2개 레코드삭제
 		}
 		//게시물 레코드삭제(아래)
 		boardService.delete_board((int)boardVO.getNttId());
-		rdat.addFlashAttribute("boardVO", boardVO);
 		rdat.addFlashAttribute("msg", "삭제");
 		return "redirect:/admin/board/list_board.do?bbsId="+boardVO.getBbsId();
 	}
@@ -223,14 +330,14 @@ public class AdminController {
 
 		boardVO.setLastUpdusrId(user.getUniqId());
 		BoardVO vo = bbsMngService.selectBoardArticle(boardVO);
-		//시큐어코딩 시작(게시물제목/내용에서 자바스크립트 코드 제거)
-		//egov 저장할때 시큐어코딩으로 저장하는 방식을 사용하지만 문제가 있어서 우리 방식으로 변경
+		//시큐어코딩 시작(게시물제목/내용에서 자바스크립트 코드의 꺽쇠태그를 특수문자로 바꿔서 실행하지 못하는 코드로 변경)
+		//egov 저장할때, 시큐어코딩으로 저장하는 방식을 사용, 문제있음. 우리방식으로 적용
 		String subject = commUtil.unscript(vo.getNttSj());//게시물제목
-		String content = commUtil.unscript(vo.getNttCn());//게시물내용
+		String content = commUtil.unscript(vo.getNttCn());//개시물내용
 		vo.setNttSj(subject);
 		vo.setNttCn(content);
 		model.addAttribute("result", vo);
-
+		
 		model.addAttribute("sessionUniqId", user.getUniqId());
 
 		//----------------------------
@@ -254,14 +361,12 @@ public class AdminController {
 	@RequestMapping("/admin/board/list_board.do")
 	public String list_board(@ModelAttribute("searchVO") BoardVO boardVO, ModelMap model) throws Exception {
 		LoginVO user = (LoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
-		if(boardVO.getBbsId() == null) {
-			boardVO.setBbsId("");
-		}
+
 		boardVO.setBbsId(boardVO.getBbsId());
 		boardVO.setBbsNm(boardVO.getBbsNm());
 
 		BoardMasterVO vo = new BoardMasterVO();
-
+		System.out.println("디버그: 게시판아이디는 "+boardVO.getBbsId());
 		vo.setBbsId(boardVO.getBbsId());
 		vo.setUniqId(user.getUniqId());
 

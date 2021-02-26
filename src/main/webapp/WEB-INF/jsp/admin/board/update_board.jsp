@@ -47,7 +47,7 @@
                   </div>
                   <div class="form-group">
                   	<label for="nttCn">Content</label>
-                  	<textarea rows="5" name="nttCn" id="nttCn" class="form-control">${result.nttCn}</textarea>
+                  	<textarea rows="5" name="nttCn" id="nttCn" class="form-control"><c:out value="${result.nttCn}" /></textarea>
                   	<!-- 필수입력 값은 html5에서 지원하는 유효성 검사중 required 속성을 사용해서 빈(null)값체크(유효성검사)를 합니다. -->
                   </div>
                   <div class="form-group">
@@ -59,7 +59,7 @@
                   </div>
                   <div class="custom-file">
                   	<c:if test="${not empty result.atchFileId}">
-		                <hr>
+		                <hr><br>
 		                <strong><i class="far fa-save mr-1"></i> 첨부파일</strong>
 		                <p class="text-muted">
 		                <c:import url="/cmm/fms/selectFileInfs.do" charEncoding="utf-8">
@@ -99,7 +99,6 @@
 			<input name="ntceBgnde" type="hidden" value="10000101">
 			<input name="ntceEndde" type="hidden" value="99991231">
 			
-			<input type="hidden" name="atchFileId" value="${result.atchFileId}">
 			<input type="hidden" name="fileSn" value="0">
           </form>
           <!-- 폼내부에 버튼이 있어야지만, 전송버튼이 작동 됩니다. -->
@@ -116,7 +115,7 @@
 
 <%@ include file="../include/footer.jsp" %>
 <!-- 첨부파일 부트스트랩 디자인 JS -->
-<script src="<c:url value='/' />/resources/plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
+<script src="<c:url value='/' />resources/plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
 <!-- 첨부파일 선택한 내용 출력 실행 -->
 <script>
 $(document).ready(function () {
