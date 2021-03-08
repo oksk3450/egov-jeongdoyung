@@ -18,7 +18,7 @@
 		<!-- 메인본문영역 -->
 		<div class="bodytext_area box_inner">
 			<!-- 폼영역 -->
-			<form method="POST" name="login_form" action="<c:url value='/login_action.do'/>" class="appForm">
+			<form method="POST" name="login_form" action="<c:url value='/login_action.do' />" class="appForm">
 				<fieldset>
 					<legend>로그인폼</legend>
 					<p class="info_pilsoo pilsoo_item">필수입력</p>
@@ -31,6 +31,7 @@
 							<label for="password_lbl" class="tit_lbl pilsoo_item">암호</label>
 							<div class="app_content"><input type="password" name="password" class="w100p" id="password_lbl" placeholder="암호를 입력해주세요" required/></div>
 						</li>
+
 					</ul>
 					<p class="btn_line">
 					<button type="submit" class="btn_baseColor">로그인</button>
@@ -43,3 +44,4 @@
 		<!-- //메인본문영역 -->
 	</div>
 	<!-- //메이콘텐츠영역 -->
+	
