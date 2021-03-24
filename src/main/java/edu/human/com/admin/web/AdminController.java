@@ -67,6 +67,14 @@ public class AdminController {
 	@Autowired
 	private EgovFileMngUtil fileUtil;
 	
+	//권한 관리 리스트 호출 GET 
+		@RequestMapping(value="/admin/authorrole/list_author.do",method=RequestMethod.GET)
+		public String list_author(Model model) throws Exception {
+			//Get,Set VO생성
+			return "admin/authorrole/list_author";
+		}
+		//게시물 등록 폼화면 호출 GET/POST 2개다 허용
+		
 	//게시물 등록 폼화면 호출 POST
 	@RequestMapping("/admin/board/insert_board_form.do")
 	public String insert_board_form(@ModelAttribute("searchVO") BoardVO boardVO, ModelMap model) throws Exception {
